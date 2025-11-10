@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Random People Selector</title>
+    <title>BOESL</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         * {
@@ -46,7 +46,8 @@
             text-align: center;
             margin-bottom: 30px;
             padding-bottom: 20px;
-            border-bottom: 1px solid #eaeaea;
+            border-bottom: 1px solid #ffc3c3;
+            background: #b9b9b9;
         }
         
         h1 {
@@ -439,7 +440,8 @@
 <body>
     <div class="container">
         <header>
-            <h1>Random People Selector</h1>
+            <img src="logo.png" alt="BOESL">
+            <h1>Random Candidate Selection For BOESL</h1>
             <p class="description">Upload your Excel dataset, preview the data, randomly select people, and download the results as Excel or CSV files.</p>
         </header>
         
@@ -557,14 +559,187 @@
             </div>
         </section>
         
-        <div class="algorithm-info">
-            <h3>How Random Selection Works</h3>
-            <p>Our algorithm uses the Fisher-Yates shuffle to ensure truly random selection without any patterns or biases. Each person in your dataset has an equal chance of being selected, and the selection process is completely unpredictable.</p>
-        </div>
+
     </div>
 
     <div id="notification" class="notification"></div>
+<!-- Footer Section -->
+<footer class="footer">
+    <div class="footer-content">
+        <div class="footer-logo">
+            <img src="ALFA.png" alt="AlphaSoft Systems Ltd." class="footer-logo-img">
+            <div class="logo-text">
+                <span class="powered-by">Powered by</span>
+                <span class="company-name">AlphaSoft Systems Ltd.</span>
+            </div>
+        </div>
+        <div class="footer-info">
+            <p>&copy; 2025 AlphaSoft Systems Ltd. All rights reserved.</p>
+            <p>01749192322  </p>
+        </div>
+        <div class="footer-links">
+            <a href="#" class="footer-link">Privacy Policy</a>
+            <a href="#" class="footer-link">Terms of Service</a>
+            <a href="#" class="footer-link">Contact Us</a>
+        </div>
+    </div>
+</footer>
 
+<style>
+.footer {
+    background: linear-gradient(135deg, #6b7e92 0%, #223950 100%);
+    color: white;
+    padding: 40px 0;
+    margin-top: 50px;
+    border-top: 4px solid #3498db;
+    text-align: center;
+}
+
+.footer-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 30px;
+    padding: 0 20px;
+}
+
+.footer-logo {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.footer-logo-img {
+    width: 50px;
+    height: 50px;
+    object-fit: contain;
+    border-radius: 8px;
+    padding: 5px;
+  
+}
+
+.logo-text {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+}
+
+.company-name {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #ecf0f1;
+}
+
+.powered-by {
+    font-size: 0.9rem;
+    color: #bdc3c7;
+}
+
+.footer-info {
+    text-align: center;
+}
+
+.footer-info p {
+    margin: 8px 0;
+    color: #ecf0f1;
+    font-size: 1rem;
+    line-height: 1.5;
+}
+
+.footer-links {
+    display: flex;
+    justify-content: center;
+    gap: 25px;
+    flex-wrap: wrap;
+}
+
+.footer-link {
+    color: #bdc3c7;
+    text-decoration: none;
+    transition: color 0.3s ease;
+    font-size: 1rem;
+    padding: 8px 16px;
+    border-radius: 5px;
+    transition: all 0.3s ease;
+}
+
+.footer-link:hover {
+    color: #3498db;
+    background: rgba(52, 152, 219, 0.1);
+    transform: translateY(-2px);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .footer {
+        padding: 30px 0;
+    }
+    
+    .footer-content {
+        gap: 25px;
+    }
+    
+    .footer-logo {
+        flex-direction: column;
+        text-align: center;
+        gap: 12px;
+    }
+    
+    .logo-text {
+        align-items: center;
+    }
+    
+    .footer-logo-img {
+        width: 45px;
+        height: 45px;
+    }
+    
+    .company-name {
+        font-size: 1.3rem;
+    }
+    
+    .footer-links {
+        gap: 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .footer {
+        padding: 25px 0;
+    }
+    
+    .footer-content {
+        padding: 0 15px;
+        gap: 20px;
+    }
+    
+    .footer-links {
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .company-name {
+        font-size: 1.2rem;
+    }
+    
+    .footer-info p {
+        font-size: 0.9rem;
+    }
+    
+    .footer-link {
+        padding: 10px 20px;
+        font-size: 0.95rem;
+    }
+    
+    .footer-logo-img {
+        width: 40px;
+        height: 40px;
+    }
+}
+</style>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const fileInput = document.getElementById('fileInput');
