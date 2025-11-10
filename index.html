@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Random People Selector</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            padding: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, #6a11cb, #2575fc);
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eaeaea;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 2.5rem;
+        }
+        
+        .description {
+            color: #7f8c8d;
+            font-size: 1.1rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .main-content {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .upload-section {
+            flex: 1;
+            min-width: 300px;
+            background-color: #f8f9fa;
+            border: 2px dashed #dee2e6;
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .upload-section:hover {
+            border-color: #3498db;
+            background-color: #f0f8ff;
+            transform: translateY(-5px);
+        }
+        
+        .upload-icon {
+            font-size: 64px;
+            color: #3498db;
+            margin-bottom: 15px;
+        }
+        
+        .file-input {
+            display: none;
+        }
+        
+        .file-label {
+            display: inline-block;
+            background: linear-gradient(to right, #3498db, #2c3e50);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+        }
+        
+        .file-label:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+        }
+        
+        .file-name {
+            margin-top: 15px;
+            color: #7f8c8d;
+            font-weight: 500;
+        }
+        
+        .controls-section {
+            flex: 1;
+            min-width: 300px;
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 30px;
+        }
+        
+        .input-group {
+            margin-bottom: 20px;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .number-input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        
+        .number-input:focus {
+            border-color: #3498db;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+        }
+        
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+        }
+        
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            flex: 1;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .select-btn {
+            background: linear-gradient(to right, #2ecc71, #27ae60);
+            color: white;
+        }
+        
+        .select-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(46, 204, 113, 0.4);
+        }
+        
+        .select-btn:disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .reset-btn {
+            background: linear-gradient(to right, #e74c3c, #c0392b);
+            color: white;
+        }
+        
+        .reset-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(231, 76, 60, 0.4);
+        }
+        
+        .preview-section {
+            display: none;
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 30px;
+            margin-top: 20px;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .results-section {
+            display: none;
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 30px;
+            margin-top: 20px;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .section-count {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #2c3e50;
+            background: white;
+            padding: 8px 15px;
+            border-radius: 50px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .table-container {
+            overflow-x: auto;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            background: white;
+        }
+        
+        .data-table th {
+            background: linear-gradient(to right, #34495e, #2c3e50);
+            color: white;
+            text-align: left;
+            padding: 15px;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+        }
+        
+        .data-table td {
+            padding: 15px;
+            border-bottom: 1px solid #eaeaea;
+        }
+        
+        .data-table tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        
+        .data-table tr:hover {
+            background-color: #f0f7ff;
+        }
+        
+        .highlighted {
+            background-color: #e1f5fe !important;
+            font-weight: 600;
+        }
+        
+        .export-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .export-btn {
+            background: linear-gradient(to right, #9b59b6, #8e44ad);
+            color: white;
+            width: 200px;
+        }
+        
+        .export-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(155, 89, 182, 0.4);
+        }
+        
+        .export-excel {
+            background: linear-gradient(to right, #2ecc71, #27ae60);
+        }
+        
+        .export-csv {
+            background: linear-gradient(to right, #3498db, #2980b9);
+        }
+        
+        .algorithm-info {
+            background: linear-gradient(to right, #f9f9f9, #f0f0f0);
+            border-left: 4px solid #3498db;
+            padding: 20px;
+            margin-top: 30px;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .algorithm-info h3 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-left-color: #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            transform: translateX(150%);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .notification.success {
+            background: linear-gradient(to right, #2ecc71, #27ae60);
+        }
+        
+        .notification.error {
+            background: linear-gradient(to right, #e74c3c, #c0392b);
+        }
+        
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .tab {
+            padding: 12px 24px;
+            cursor: pointer;
+            font-weight: 600;
+            color: #7f8c8d;
+            transition: all 0.3s;
+            border-bottom: 3px solid transparent;
+        }
+        
+        .tab.active {
+            color: #3498db;
+            border-bottom: 3px solid #3498db;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .download-info {
+            background: #e8f4fd;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+            border-left: 4px solid #3498db;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            .controls {
+                flex-direction: column;
+            }
+            
+            .section-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .tabs {
+                flex-wrap: wrap;
+            }
+            
+            .export-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .export-btn {
+                width: 100%;
+                max-width: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Random People Selector</h1>
+            <p class="description">Upload your Excel dataset, preview the data, randomly select people, and download the results as Excel or CSV files.</p>
+        </header>
+        
+        <div class="main-content">
+            <section class="upload-section">
+                <div class="upload-icon">📊</div>
+                <h2>Upload Your Excel File</h2>
+                <p>Supported formats: .xlsx, .xls</p>
+                <input type="file" id="fileInput" class="file-input" accept=".xlsx, .xls">
+                <label for="fileInput" class="file-label">Choose Excel File</label>
+                <div id="fileName" class="file-name">No file selected</div>
+            </section>
+            
+            <section class="controls-section">
+                <h2>Selection Controls</h2>
+                <div class="input-group">
+                    <label for="numberInput">Number of People to Select</label>
+                    <input type="number" id="numberInput" class="number-input" min="1" value="20" placeholder="Enter number of people to select">
+                </div>
+                
+                <div class="input-group">
+                    <label>Dataset Information</label>
+                    <div id="datasetInfo">No dataset loaded</div>
+                </div>
+                
+                <div class="controls">
+                    <button id="selectBtn" class="select-btn" disabled>Select Random People</button>
+                    <button id="resetBtn" class="reset-btn">Reset</button>
+                </div>
+            </section>
+        </div>
+        
+        <div class="loading" id="loadingIndicator">
+            <div class="spinner"></div>
+            <p>Processing your file...</p>
+        </div>
+        
+        <section class="preview-section" id="previewSection">
+            <div class="section-header">
+                <h2>Dataset Preview</h2>
+                <div class="section-count">Total: <span id="previewCount">0</span> people</div>
+            </div>
+            
+            <div class="table-container">
+                <table class="data-table" id="previewTable">
+                    <thead>
+                        <tr id="previewHeader">
+                            <!-- Headers will be populated here -->
+                        </tr>
+                    </thead>
+                    <tbody id="previewBody">
+                        <!-- Preview data will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+        
+        <section class="results-section" id="resultsSection">
+            <div class="tabs">
+                <div class="tab active" data-tab="results">Selected People</div>
+                <div class="tab" data-tab="comparison">Comparison View</div>
+            </div>
+            
+            <div class="tab-content active" id="resultsTab">
+                <div class="section-header">
+                    <h2>Selected People</h2>
+                    <div class="section-count">Showing <span id="selectedCount">0</span> of <span id="totalCount">0</span> people</div>
+                </div>
+                
+                <div class="table-container">
+                    <table class="data-table" id="resultsTable">
+                        <thead>
+                            <tr id="resultsHeader">
+                                <!-- Headers will be populated here -->
+                            </tr>
+                        </thead>
+                        <tbody id="resultsBody">
+                            <!-- Results will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="export-buttons">
+                    <button id="exportExcelBtn" class="export-btn export-excel">Download as Excel</button>
+                    <button id="exportCsvBtn" class="export-btn export-csv">Download as CSV</button>
+                </div>
+                
+                <div class="download-info">
+                    <strong>Download Options:</strong> 
+                    <ul style="margin-top: 10px; margin-left: 20px;">
+                        <li><strong>Excel:</strong> Best for further analysis in spreadsheet software</li>
+                        <li><strong>CSV:</strong> Universal format compatible with most applications</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="tab-content" id="comparisonTab">
+                <div class="section-header">
+                    <h2>Comparison: Selected vs Full Dataset</h2>
+                    <div class="section-count"><span id="selectedHighlightCount">0</span> selected, <span id="totalHighlightCount">0</span> total</div>
+                </div>
+                
+                <div class="table-container">
+                    <table class="data-table" id="comparisonTable">
+                        <thead>
+                            <tr id="comparisonHeader">
+                                <!-- Headers will be populated here -->
+                            </tr>
+                        </thead>
+                        <tbody id="comparisonBody">
+                            <!-- Comparison data will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+        
+        <div class="algorithm-info">
+            <h3>How Random Selection Works</h3>
+            <p>Our algorithm uses the Fisher-Yates shuffle to ensure truly random selection without any patterns or biases. Each person in your dataset has an equal chance of being selected, and the selection process is completely unpredictable.</p>
+        </div>
+    </div>
+
+    <div id="notification" class="notification"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const fileInput = document.getElementById('fileInput');
+            const fileName = document.getElementById('fileName');
+            const numberInput = document.getElementById('numberInput');
+            const datasetInfo = document.getElementById('datasetInfo');
+            const selectBtn = document.getElementById('selectBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const previewSection = document.getElementById('previewSection');
+            const previewHeader = document.getElementById('previewHeader');
+            const previewBody = document.getElementById('previewBody');
+            const previewCount = document.getElementById('previewCount');
+            const resultsSection = document.getElementById('resultsSection');
+            const resultsHeader = document.getElementById('resultsHeader');
+            const resultsBody = document.getElementById('resultsBody');
+            const selectedCount = document.getElementById('selectedCount');
+            const totalCount = document.getElementById('totalCount');
+            const comparisonBody = document.getElementById('comparisonBody');
+            const comparisonHeader = document.getElementById('comparisonHeader');
+            const selectedHighlightCount = document.getElementById('selectedHighlightCount');
+            const totalHighlightCount = document.getElementById('totalHighlightCount');
+            const exportExcelBtn = document.getElementById('exportExcelBtn');
+            const exportCsvBtn = document.getElementById('exportCsvBtn');
+            const loadingIndicator = document.getElementById('loadingIndicator');
+            const notification = document.getElementById('notification');
+            const tabs = document.querySelectorAll('.tab');
+            const tabContents = document.querySelectorAll('.tab-content');
+            
+            let dataset = [];
+            let selectedPeople = [];
+            let headers = [];
+            let originalFileName = '';
+            
+            // Show notification
+            function showNotification(message, type) {
+                notification.textContent = message;
+                notification.className = `notification ${type}`;
+                notification.classList.add('show');
+                
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                }, 3000);
+            }
+            
+            // Tab switching functionality
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const tabId = tab.getAttribute('data-tab');
+                    
+                    // Update active tab
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    
+                    // Show corresponding content
+                    tabContents.forEach(content => {
+                        content.classList.remove('active');
+                        if (content.id === `${tabId}Tab`) {
+                            content.classList.add('active');
+                        }
+                    });
+                });
+            });
+            
+            // Handle file selection
+            fileInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    fileName.textContent = file.name;
+                    originalFileName = file.name.replace(/\.[^/.]+$/, ""); // Remove extension
+                    
+                    // Show loading indicator
+                    loadingIndicator.style.display = 'block';
+                    
+                    // Read the Excel file
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        try {
+                            const data = new Uint8Array(e.target.result);
+                            const workbook = XLSX.read(data, { type: 'array' });
+                            
+                            // Get the first worksheet
+                            const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+                            
+                            // Convert to JSON
+                            const jsonData = XLSX.utils.sheet_to_json(worksheet);
+                            
+                            if (jsonData.length > 0) {
+                                dataset = jsonData;
+                                headers = Object.keys(dataset[0]);
+                                
+                                // Update UI
+                                totalCount.textContent = dataset.length;
+                                previewCount.textContent = dataset.length;
+                                datasetInfo.innerHTML = `
+                                    <strong>${dataset.length}</strong> people loaded<br>
+                                    <strong>${headers.length}</strong> data columns
+                                `;
+                                selectBtn.disabled = false;
+                                
+                                // Display preview
+                                displayPreview(dataset);
+                                previewSection.style.display = 'block';
+                                
+                                showNotification('Dataset loaded successfully!', 'success');
+                                loadingIndicator.style.display = 'none';
+                                
+                                // Set max value for number input
+                                numberInput.max = dataset.length;
+                            } else {
+                                alert('The Excel file appears to be empty or improperly formatted.');
+                                loadingIndicator.style.display = 'none';
+                            }
+                        } catch (error) {
+                            console.error('Error processing Excel file:', error);
+                            showNotification('Error processing the Excel file', 'error');
+                            loadingIndicator.style.display = 'none';
+                        }
+                    };
+                    reader.readAsArrayBuffer(file);
+                } else {
+                    fileName.textContent = 'No file selected';
+                    selectBtn.disabled = true;
+                }
+            });
+            
+            // Handle random selection
+            selectBtn.addEventListener('click', function() {
+                if (dataset.length === 0) {
+                    showNotification('Please upload a valid Excel file first.', 'error');
+                    return;
+                }
+                
+                const count = parseInt(numberInput.value);
+                
+                if (isNaN(count) || count < 1) {
+                    showNotification('Please enter a valid number of people to select.', 'error');
+                    return;
+                }
+                
+                if (count > dataset.length) {
+                    showNotification(`You can only select up to ${dataset.length} people from your dataset.`, 'error');
+                    numberInput.value = dataset.length;
+                    return;
+                }
+                
+                // Use Fisher-Yates shuffle for truly random selection
+                selectedPeople = getRandomSubset(dataset, count);
+                
+                // Display results
+                displayResults(selectedPeople);
+                displayComparison(dataset, selectedPeople);
+                resultsSection.style.display = 'block';
+                
+                // Scroll to results
+                resultsSection.scrollIntoView({ behavior: 'smooth' });
+                
+                showNotification(`Successfully selected ${count} random people!`, 'success');
+            });
+            
+            // Handle reset
+            resetBtn.addEventListener('click', function() {
+                fileInput.value = '';
+                fileName.textContent = 'No file selected';
+                selectBtn.disabled = true;
+                previewSection.style.display = 'none';
+                resultsSection.style.display = 'none';
+                dataset = [];
+                selectedPeople = [];
+                headers = [];
+                datasetInfo.textContent = 'No dataset loaded';
+                numberInput.value = '20';
+                originalFileName = '';
+                showNotification('Application reset successfully.', 'success');
+            });
+            
+            // Handle Excel export
+            exportExcelBtn.addEventListener('click', function() {
+                if (selectedPeople.length === 0) {
+                    showNotification('No data to export. Please select people first.', 'error');
+                    return;
+                }
+                
+                // Create a new workbook
+                const wb = XLSX.utils.book_new();
+                
+                // Convert JSON to worksheet
+                const ws = XLSX.utils.json_to_sheet(selectedPeople);
+                
+                // Add worksheet to workbook
+                XLSX.utils.book_append_sheet(wb, ws, "Selected People");
+                
+                // Generate Excel file and trigger download
+                const fileName = `${originalFileName || 'random_selection'}_${selectedPeople.length}_people.xlsx`;
+                XLSX.writeFile(wb, fileName);
+                
+                showNotification('Excel file downloaded successfully!', 'success');
+            });
+            
+            // Handle CSV export
+            exportCsvBtn.addEventListener('click', function() {
+                if (selectedPeople.length === 0) {
+                    showNotification('No data to export. Please select people first.', 'error');
+                    return;
+                }
+                
+                // Convert to CSV
+                const csvContent = convertToCSV(selectedPeople);
+                
+                // Create download link
+                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.setAttribute('href', url);
+                const fileName = `${originalFileName || 'random_selection'}_${selectedPeople.length}_people.csv`;
+                link.setAttribute('download', fileName);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                showNotification('CSV file downloaded successfully!', 'success');
+            });
+            
+            // Fisher-Yates shuffle algorithm for random selection
+            function getRandomSubset(array, count) {
+                const shuffled = [...array];
+                let currentIndex = shuffled.length;
+                let temporaryValue, randomIndex;
+                
+                // While there remain elements to shuffle
+                while (currentIndex !== 0) {
+                    // Pick a remaining element
+                    randomIndex = Math.floor(Math.random() * currentIndex);
+                    currentIndex -= 1;
+                    
+                    // Swap it with the current element
+                    temporaryValue = shuffled[currentIndex];
+                    shuffled[currentIndex] = shuffled[randomIndex];
+                    shuffled[randomIndex] = temporaryValue;
+                }
+                
+                // Return the first 'count' elements
+                return shuffled.slice(0, Math.min(count, array.length));
+            }
+            
+            // Display dataset preview
+            function displayPreview(data) {
+                previewHeader.innerHTML = '';
+                previewBody.innerHTML = '';
+                
+                // Create header row
+                headers.forEach(header => {
+                    const th = document.createElement('th');
+                    th.textContent = header;
+                    previewHeader.appendChild(th);
+                });
+                
+                // Create data rows (show first 50 rows for performance)
+                const displayData = data.slice(0, 50);
+                displayData.forEach((person, index) => {
+                    const row = document.createElement('tr');
+                    
+                    headers.forEach(header => {
+                        const cell = document.createElement('td');
+                        cell.textContent = person[header] || 'N/A';
+                        row.appendChild(cell);
+                    });
+                    
+                    previewBody.appendChild(row);
+                });
+                
+                if (data.length > 50) {
+                    const messageRow = document.createElement('tr');
+                    const messageCell = document.createElement('td');
+                    messageCell.colSpan = headers.length;
+                    messageCell.textContent = `... and ${data.length - 50} more rows (showing first 50)`;
+                    messageCell.style.textAlign = 'center';
+                    messageCell.style.fontStyle = 'italic';
+                    messageCell.style.color = '#7f8c8d';
+                    messageRow.appendChild(messageCell);
+                    previewBody.appendChild(messageRow);
+                }
+            }
+            
+            // Display results in the table
+            function displayResults(people) {
+                resultsHeader.innerHTML = '';
+                resultsBody.innerHTML = '';
+                selectedCount.textContent = people.length;
+                
+                // Create header row
+                headers.forEach(header => {
+                    const th = document.createElement('th');
+                    th.textContent = header;
+                    resultsHeader.appendChild(th);
+                });
+                
+                // Create data rows
+                people.forEach((person, index) => {
+                    const row = document.createElement('tr');
+                    
+                    headers.forEach(header => {
+                        const cell = document.createElement('td');
+                        cell.textContent = person[header] || 'N/A';
+                        row.appendChild(cell);
+                    });
+                    
+                    resultsBody.appendChild(row);
+                });
+            }
+            
+            // Display comparison view
+            function displayComparison(fullData, selectedData) {
+                comparisonHeader.innerHTML = '';
+                comparisonBody.innerHTML = '';
+                selectedHighlightCount.textContent = selectedData.length;
+                totalHighlightCount.textContent = fullData.length;
+                
+                // Create header row
+                headers.forEach(header => {
+                    const th = document.createElement('th');
+                    th.textContent = header;
+                    comparisonHeader.appendChild(th);
+                });
+                
+                // Create data rows (show first 100 rows for performance)
+                const displayData = fullData.slice(0, 100);
+                displayData.forEach((person, index) => {
+                    const row = document.createElement('tr');
+                    
+                    // Check if this person is in the selected group
+                    const isSelected = selectedData.some(selected => 
+                        JSON.stringify(selected) === JSON.stringify(person)
+                    );
+                    
+                    if (isSelected) {
+                        row.classList.add('highlighted');
+                    }
+                    
+                    headers.forEach(header => {
+                        const cell = document.createElement('td');
+                        cell.textContent = person[header] || 'N/A';
+                        row.appendChild(cell);
+                    });
+                    
+                    comparisonBody.appendChild(row);
+                });
+                
+                if (fullData.length > 100) {
+                    const messageRow = document.createElement('tr');
+                    const messageCell = document.createElement('td');
+                    messageCell.colSpan = headers.length;
+                    messageCell.textContent = `... and ${fullData.length - 100} more rows (showing first 100)`;
+                    messageCell.style.textAlign = 'center';
+                    messageCell.style.fontStyle = 'italic';
+                    messageCell.style.color = '#7f8c8d';
+                    messageRow.appendChild(messageCell);
+                    comparisonBody.appendChild(messageRow);
+                }
+            }
+            
+            // Convert data to CSV
+            function convertToCSV(data) {
+                if (data.length === 0) return '';
+                
+                const csvRows = [headers.join(',')];
+                
+                for (const row of data) {
+                    const values = headers.map(header => {
+                        const value = row[header] || '';
+                        // Escape quotes and wrap in quotes if contains comma
+                        const escaped = String(value).replace(/"/g, '""');
+                        return escaped.includes(',') ? `"${escaped}"` : escaped;
+                    });
+                    csvRows.push(values.join(','));
+                }
+                
+                return csvRows.join('\n');
+            }
+        });
+    </script>
+</body>
+</html>
